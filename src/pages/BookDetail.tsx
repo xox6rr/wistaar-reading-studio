@@ -115,10 +115,12 @@ export default function BookDetail() {
 
               {/* CTA */}
               <div className="flex flex-wrap gap-4">
-                <Button variant="editorial" size="xl" className="gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Start Reading
-                </Button>
+                <Link to={`/read/${book.id}?chapter=1`}>
+                  <Button variant="editorial" size="xl" className="gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    Start Reading
+                  </Button>
+                </Link>
                 <Button variant="outline" size="xl">
                   Add to Library
                 </Button>
@@ -161,9 +163,10 @@ export default function BookDetail() {
                 </h2>
                 <div className="border border-border rounded-lg divide-y divide-border">
                   {book.chapters.map((chapter) => (
-                    <div 
+                    <Link 
                       key={chapter.id}
-                      className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors cursor-pointer"
+                      to={`/read/${book.id}?chapter=${chapter.number}`}
+                      className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex items-center gap-4">
                         <span className="text-sm text-muted-foreground w-8">
@@ -175,7 +178,7 @@ export default function BookDetail() {
                         <Clock className="h-4 w-4" />
                         {chapter.readingTime}
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>
