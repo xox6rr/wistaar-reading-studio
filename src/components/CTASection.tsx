@@ -5,58 +5,60 @@ import { Link } from "react-router-dom";
 const CTASection = () => {
   return (
     <section className="section-spacing relative overflow-hidden">
-      {/* Background decorations */}
+      {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sage-light/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-teal-light/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-amber-light/30 rounded-full blur-3xl" />
       </div>
       
       <div className="container-editorial relative">
         <div className="max-w-3xl mx-auto text-center">
-          {/* Decorative element */}
-          <div className="flex justify-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-sage flex items-center justify-center shadow-glow animate-pulse-glow">
-              <BookOpen className="w-7 h-7 text-primary-foreground" />
+          {/* Icon */}
+          <div className="flex justify-center mb-10">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-teal flex items-center justify-center shadow-glow animate-pulse-glow">
+              <BookOpen className="w-9 h-9 text-primary-foreground" />
             </div>
           </div>
           
-          <h2 className="headline-editorial text-display-sm lg:text-heading text-foreground mb-6">
+          <h2 className="headline-editorial text-heading lg:text-display-sm text-foreground mb-6 text-balance">
             Begin your journey.
           </h2>
-          <p className="text-body text-muted-foreground mb-12 max-w-xl mx-auto leading-relaxed">
+          <p className="text-lg lg:text-xl text-muted-foreground mb-14 max-w-xl mx-auto leading-relaxed">
             Whether you're here to discover your next favorite book or share 
             your stories with the world, Wistaar welcomes you.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-14">
             <Link to="/explore">
-              <Button variant="editorial" size="xl" className="group shadow-medium hover:shadow-glow transition-shadow">
+              <Button variant="editorial" size="xl" className="group shadow-medium hover:shadow-glow transition-all duration-400">
                 <BookOpen className="w-5 h-5" />
                 Start Reading
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Button>
             </Link>
             <Link to="/publish">
-              <Button variant="outline" size="xl" className="group">
+              <Button variant="outline" size="xl" className="group hover:bg-accent/40 transition-all duration-300">
                 <Feather className="w-5 h-5" />
                 Publish Your Book
               </Button>
             </Link>
           </div>
           
-          {/* Trust badge */}
-          <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-accent/50 border border-primary/10">
-            <div className="flex -space-x-2">
-              {[1, 2, 3, 4].map((i) => (
+          {/* Social proof */}
+          <div className="inline-flex items-center gap-4 px-6 py-4 rounded-full bg-accent/50 border border-amber/15">
+            <div className="flex -space-x-3">
+              {['T', 'A', 'R', 'S'].map((letter, i) => (
                 <div 
                   key={i} 
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-secondary to-accent border-2 border-background flex items-center justify-center"
+                  className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-accent border-2 border-background flex items-center justify-center shadow-soft"
+                  style={{ zIndex: 4 - i }}
                 >
-                  <span className="text-xs font-medium text-accent-foreground">{String.fromCharCode(64 + i)}</span>
+                  <span className="text-sm font-semibold text-accent-foreground">{letter}</span>
                 </div>
               ))}
             </div>
-            <p className="text-sm text-muted-foreground">
-              Join <span className="font-medium text-foreground">10,000+</span> readers today
+            <p className="text-muted-foreground">
+              Join <span className="font-semibold text-foreground">10,000+</span> readers today
             </p>
           </div>
         </div>

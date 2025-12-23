@@ -1,130 +1,108 @@
 import { Link } from "react-router-dom";
-import { BookOpen, Twitter, Instagram, Mail } from "lucide-react";
+import { BookOpen, Twitter, Instagram, Mail, Heart } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-b from-background to-cream/50 border-t border-border py-16 lg:py-20">
+    <footer className="bg-gradient-to-b from-background to-cream/60 border-t border-border py-20 lg:py-24">
       <div className="container-editorial">
-        <div className="grid md:grid-cols-5 gap-12 lg:gap-8">
+        {/* Main Footer Content */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-16">
           {/* Brand */}
-          <div className="md:col-span-2">
-            <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center transition-transform group-hover:scale-105">
-                <BookOpen className="w-4 h-4 text-primary-foreground" />
+          <div className="lg:col-span-2">
+            <Link to="/" className="inline-flex items-center gap-3 mb-5 group">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-teal flex items-center justify-center shadow-soft transition-transform group-hover:scale-105">
+                <BookOpen className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-semibold tracking-tight text-foreground font-serif">
+              <span className="text-2xl font-semibold tracking-tight text-foreground headline-editorial">
                 Wistaar
               </span>
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mb-6">
+            <p className="text-muted-foreground leading-relaxed max-w-sm mb-8">
               A secure platform for authors to publish freely and readers 
               to enjoy exceptional stories from India and beyond.
             </p>
             
             {/* Social links */}
             <div className="flex items-center gap-3">
-              <a href="#" className="w-9 h-9 rounded-lg bg-accent hover:bg-primary hover:text-primary-foreground flex items-center justify-center transition-all duration-200">
-                <Twitter className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-9 h-9 rounded-lg bg-accent hover:bg-primary hover:text-primary-foreground flex items-center justify-center transition-all duration-200">
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-9 h-9 rounded-lg bg-accent hover:bg-primary hover:text-primary-foreground flex items-center justify-center transition-all duration-200">
-                <Mail className="w-4 h-4" />
-              </a>
+              {[
+                { icon: Twitter, label: 'Twitter' },
+                { icon: Instagram, label: 'Instagram' },
+                { icon: Mail, label: 'Email' }
+              ].map(({ icon: Icon, label }) => (
+                <a 
+                  key={label}
+                  href="#" 
+                  aria-label={label}
+                  className="w-11 h-11 rounded-xl bg-accent/70 hover:bg-primary hover:text-primary-foreground flex items-center justify-center transition-all duration-300 hover:-translate-y-0.5"
+                >
+                  <Icon className="w-5 h-5" />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Readers */}
-          <div>
-            <h4 className="text-sm font-semibold text-foreground mb-5">For Readers</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/explore" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  Explore Books
-                </Link>
-              </li>
-              <li>
-                <Link to="/explore?filter=free" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  Free Reading
-                </Link>
-              </li>
-              <li>
-                <Link to="/explore?filter=premium" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  Premium Access
-                </Link>
-              </li>
-              <li>
-                <Link to="/library" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  My Library
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Authors */}
-          <div>
-            <h4 className="text-sm font-semibold text-foreground mb-5">For Authors</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/publish" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  Start Publishing
-                </Link>
-              </li>
-              <li>
-                <Link to="/pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link to="/resources" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  Author Resources
-                </Link>
-              </li>
-              <li>
-                <Link to="/success" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  Success Stories
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h4 className="text-sm font-semibold text-foreground mb-5">Company</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/security" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  Security
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors link-animated">
-                  Terms of Service
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Links */}
+          {[
+            {
+              title: 'For Readers',
+              links: [
+                { to: '/explore', label: 'Explore Books' },
+                { to: '/explore?filter=free', label: 'Free Reading' },
+                { to: '/explore?filter=premium', label: 'Premium Access' },
+                { to: '/library', label: 'My Library' },
+              ]
+            },
+            {
+              title: 'For Authors',
+              links: [
+                { to: '/publish', label: 'Start Publishing' },
+                { to: '/pricing', label: 'Pricing' },
+                { to: '/resources', label: 'Author Resources' },
+                { to: '/success', label: 'Success Stories' },
+              ]
+            },
+            {
+              title: 'Company',
+              links: [
+                { to: '/about', label: 'About Us' },
+                { to: '/security', label: 'Security' },
+                { to: '/privacy', label: 'Privacy Policy' },
+                { to: '/terms', label: 'Terms of Service' },
+              ]
+            },
+          ].map((section) => (
+            <div key={section.title}>
+              <h4 className="text-sm font-semibold text-foreground mb-5 uppercase tracking-wider">
+                {section.title}
+              </h4>
+              <ul className="space-y-3.5">
+                {section.links.map((link) => (
+                  <li key={link.to}>
+                    <Link 
+                      to={link.to} 
+                      className="text-muted-foreground hover:text-primary transition-colors duration-200 link-animated"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        {/* Bottom */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-16 pt-8 border-t border-border">
+        {/* Bottom divider */}
+        <div className="divider-ornate mb-8">
+          <Heart className="w-4 h-4 text-rose-dark" />
+        </div>
+
+        {/* Bottom bar */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-center md:text-left">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Wistaar. All rights reserved.
           </p>
-          <p className="text-sm text-muted-foreground mt-2 md:mt-0 flex items-center gap-2">
-            Made with care in India
-            <span className="inline-block">🇮🇳</span>
+          <p className="text-sm text-muted-foreground flex items-center justify-center md:justify-start gap-2">
+            Made with <Heart className="w-4 h-4 text-rose-dark fill-rose-dark" /> in India 🇮🇳
           </p>
         </div>
       </div>

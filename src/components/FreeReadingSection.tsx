@@ -6,31 +6,27 @@ interface BookCardProps {
   title: string;
   author: string;
   genre: string;
-  coverColor?: string;
-  accentColor?: string;
+  coverGradient?: string;
 }
 
-const BookCard = ({ title, author, genre, coverColor = "from-secondary to-accent", accentColor = "bg-primary" }: BookCardProps) => {
+const BookCard = ({ title, author, genre, coverGradient = "from-teal-light to-accent" }: BookCardProps) => {
   return (
-    <article className="group cursor-pointer">
-      {/* Book Cover with 3D effect */}
-      <div className={`book-cover bg-gradient-to-br ${coverColor} aspect-[2/3] mb-4 relative`}>
-        {/* Spine effect */}
-        <div className="absolute left-0 top-0 bottom-0 w-3 bg-foreground/5" />
+    <article className="group cursor-pointer text-center">
+      {/* Book Cover */}
+      <div className={`book-cover bg-gradient-to-br ${coverGradient} aspect-[2/3] mb-5 relative shadow-soft`}>
+        {/* Spine highlight */}
+        <div className="absolute left-0 top-0 bottom-0 w-3 bg-foreground/5 rounded-l-lg" />
         
         {/* Genre badge */}
         <div className="absolute bottom-4 left-4 right-4">
-          <span className={`inline-block px-2 py-1 text-xs font-medium uppercase tracking-wider rounded ${accentColor} text-primary-foreground`}>
+          <span className="inline-block px-3 py-1.5 text-xs font-medium uppercase tracking-wider rounded-full bg-background/90 text-foreground/80 shadow-xs">
             {genre}
           </span>
         </div>
-        
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/5 transition-all duration-300" />
       </div>
       
       {/* Book Info */}
-      <h3 className="font-medium text-foreground mb-1 group-hover:text-primary transition-colors duration-200 line-clamp-1">
+      <h3 className="font-semibold text-foreground mb-1.5 group-hover:text-primary transition-colors duration-300 line-clamp-1">
         {title}
       </h3>
       <p className="text-sm text-muted-foreground">
@@ -41,46 +37,39 @@ const BookCard = ({ title, author, genre, coverColor = "from-secondary to-accent
 };
 
 const freeBooks = [
-  { title: "The Silent Garden", author: "Priya Sharma", genre: "Literary Fiction", coverColor: "from-accent to-sage-light", accentColor: "bg-primary" },
-  { title: "Beyond the Horizon", author: "Arjun Mehta", genre: "Adventure", coverColor: "from-secondary to-gold-light", accentColor: "bg-gold" },
-  { title: "Letters to Myself", author: "Kavya Nair", genre: "Poetry", coverColor: "from-muted to-accent", accentColor: "bg-primary" },
-  { title: "The Last Monsoon", author: "Vikram Das", genre: "Drama", coverColor: "from-sage-light to-accent", accentColor: "bg-gold" },
+  { title: "The Silent Garden", author: "Priya Sharma", genre: "Literary Fiction", coverGradient: "from-teal-light via-accent to-teal-light" },
+  { title: "Beyond the Horizon", author: "Arjun Mehta", genre: "Adventure", coverGradient: "from-amber-light via-secondary to-amber-light" },
+  { title: "Letters to Myself", author: "Kavya Nair", genre: "Poetry", coverGradient: "from-rose via-accent to-rose" },
+  { title: "The Last Monsoon", author: "Vikram Das", genre: "Drama", coverGradient: "from-secondary via-teal-light to-secondary" },
 ];
 
 const FreeReadingSection = () => {
   return (
     <section className="section-spacing relative overflow-hidden">
       {/* Background accent */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-sage-light/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-teal-light/15 rounded-full blur-3xl pointer-events-none" />
       
       <div className="container-editorial relative">
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-14">
-          <div>
-            <div className="inline-flex items-center gap-2 mb-4">
-              <div className="w-8 h-px bg-primary" />
-              <p className="text-caption text-primary uppercase tracking-widest font-medium">
-                Open Access
-              </p>
-            </div>
-            <h2 className="headline-editorial text-heading text-foreground">
-              Free Reading
-            </h2>
-            <p className="text-body text-muted-foreground mt-4 max-w-lg">
-              Stories shared freely by authors who believe in open access to literature. 
-              Start reading today — no account required.
+        {/* Section Header - Centered */}
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-3 mb-5">
+            <div className="w-12 h-px bg-gradient-to-r from-transparent to-primary" />
+            <p className="text-sm font-semibold text-primary uppercase tracking-widest">
+              Open Access
             </p>
+            <div className="w-12 h-px bg-gradient-to-l from-transparent to-primary" />
           </div>
-          <Link to="/explore?filter=free">
-            <Button variant="text" className="mt-6 md:mt-0 group">
-              Browse all free books
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </Link>
+          
+          <h2 className="headline-editorial text-heading text-foreground mb-5 text-balance">
+            Free Reading
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Stories shared freely by authors who believe in open access to literature.
+          </p>
         </div>
 
         {/* Books Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-10 mb-12">
           {freeBooks.map((book, index) => (
             <div 
               key={index} 
@@ -90,6 +79,16 @@ const FreeReadingSection = () => {
               <BookCard {...book} />
             </div>
           ))}
+        </div>
+
+        {/* CTA - Centered */}
+        <div className="text-center">
+          <Link to="/explore?filter=free">
+            <Button variant="text" className="group text-base">
+              Browse all free books
+              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
