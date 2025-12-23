@@ -9,6 +9,7 @@ import Explore from "./pages/Explore";
 import Publish from "./pages/Publish";
 import Auth from "./pages/Auth";
 import BookDetail from "./pages/BookDetail";
+import Read from "./pages/Read";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/publish" element={<Publish />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/book/:id" element={<BookDetail />} />
+            <Route path="/read/:id" element={<Read />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
