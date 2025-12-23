@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+
+// ============================================
+// FRONTEND-ONLY BOOKMARKS HOOK
+// Replace API calls with your backend
+// ============================================
 
 export interface Bookmark {
   id: string;
@@ -11,6 +15,23 @@ export interface Bookmark {
   highlighted_text: string | null;
   created_at: string;
 }
+
+const STORAGE_KEY = 'wistaar_bookmarks';
+
+// Helper to get all bookmarks from localStorage
+const getAllBookmarks = (): Record<string, Record<string, Bookmark[]>> => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
+
+// Helper to save all bookmarks to localStorage
+const saveAllBookmarks = (data: Record<string, Record<string, Bookmark[]>>) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+};
 
 export function useBookmarks(bookId: string | undefined) {
   const { user } = useAuth();
@@ -24,23 +45,22 @@ export function useBookmarks(bookId: string | undefined) {
       return;
     }
 
-    const loadBookmarks = async () => {
+    // ============================================
+    // TODO: Replace with your backend API call
+    // Example: GET /api/bookmarks?userId={userId}&bookId={bookId}
+    // ============================================
+    const loadBookmarks = () => {
       try {
-        const { data, error } = await supabase
-          .from("bookmarks")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("book_id", bookId)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error("Error loading bookmarks:", error);
-        } else if (data) {
-          setBookmarks(data);
-        }
+        setTimeout(() => {
+          const allBookmarks = getAllBookmarks();
+          const userBookmarks = allBookmarks[user.id];
+          if (userBookmarks && userBookmarks[bookId]) {
+            setBookmarks(userBookmarks[bookId]);
+          }
+          setIsLoading(false);
+        }, 100);
       } catch (err) {
         console.error("Failed to load bookmarks:", err);
-      } finally {
         setIsLoading(false);
       }
     };
@@ -48,62 +68,82 @@ export function useBookmarks(bookId: string | undefined) {
     loadBookmarks();
   }, [user, bookId]);
 
-  // Add bookmark
+  // ============================================
+  // TODO: Replace with your backend API call
+  // Example: POST /api/bookmarks
+  // ============================================
   const addBookmark = useCallback(
     async (
       chapterNumber: number,
       scrollPosition: number = 0,
       note?: string,
       highlightedText?: string
-    ) => {
+    ): Promise<Bookmark | null> => {
       if (!user || !bookId) return null;
 
       try {
-        const { data, error } = await supabase
-          .from("bookmarks")
-          .insert({
-            user_id: user.id,
-            book_id: bookId,
-            chapter_number: chapterNumber,
-            scroll_position: scrollPosition,
-            note: note || null,
-            highlighted_text: highlightedText || null,
-          })
-          .select()
-          .single();
+        const newBookmark: Bookmark = {
+          id: crypto.randomUUID(),
+          book_id: bookId,
+          chapter_number: chapterNumber,
+          scroll_position: scrollPosition,
+          note: note || null,
+          highlighted_text: highlightedText || null,
+          created_at: new Date().toISOString(),
+        };
 
-        if (error) {
-          console.error("Error adding bookmark:", error);
-          return null;
-        }
+        // TODO: Replace with actual API call
+        // const response = await fetch('/api/bookmarks', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({ userId: user.id, ...newBookmark }),
+        // });
+        // const data = await response.json();
 
-        if (data) {
-          setBookmarks((prev) => [data, ...prev]);
-          return data;
+        // Save to localStorage
+        const allBookmarks = getAllBookmarks();
+        if (!allBookmarks[user.id]) {
+          allBookmarks[user.id] = {};
         }
+        if (!allBookmarks[user.id][bookId]) {
+          allBookmarks[user.id][bookId] = [];
+        }
+        allBookmarks[user.id][bookId].unshift(newBookmark);
+        saveAllBookmarks(allBookmarks);
+
+        setBookmarks((prev) => [newBookmark, ...prev]);
+        return newBookmark;
       } catch (err) {
         console.error("Failed to add bookmark:", err);
+        return null;
       }
-      return null;
     },
     [user, bookId]
   );
 
-  // Update bookmark
+  // ============================================
+  // TODO: Replace with your backend API call
+  // Example: PATCH /api/bookmarks/{id}
+  // ============================================
   const updateBookmark = useCallback(
-    async (bookmarkId: string, note: string) => {
-      if (!user) return false;
+    async (bookmarkId: string, note: string): Promise<boolean> => {
+      if (!user || !bookId) return false;
 
       try {
-        const { error } = await supabase
-          .from("bookmarks")
-          .update({ note })
-          .eq("id", bookmarkId)
-          .eq("user_id", user.id);
+        // TODO: Replace with actual API call
+        // await fetch(`/api/bookmarks/${bookmarkId}`, {
+        //   method: 'PATCH',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({ note }),
+        // });
 
-        if (error) {
-          console.error("Error updating bookmark:", error);
-          return false;
+        // Update localStorage
+        const allBookmarks = getAllBookmarks();
+        if (allBookmarks[user.id]?.[bookId]) {
+          allBookmarks[user.id][bookId] = allBookmarks[user.id][bookId].map(
+            (b) => (b.id === bookmarkId ? { ...b, note } : b)
+          );
+          saveAllBookmarks(allBookmarks);
         }
 
         setBookmarks((prev) =>
@@ -115,24 +155,28 @@ export function useBookmarks(bookId: string | undefined) {
         return false;
       }
     },
-    [user]
+    [user, bookId]
   );
 
-  // Delete bookmark
+  // ============================================
+  // TODO: Replace with your backend API call
+  // Example: DELETE /api/bookmarks/{id}
+  // ============================================
   const deleteBookmark = useCallback(
-    async (bookmarkId: string) => {
-      if (!user) return false;
+    async (bookmarkId: string): Promise<boolean> => {
+      if (!user || !bookId) return false;
 
       try {
-        const { error } = await supabase
-          .from("bookmarks")
-          .delete()
-          .eq("id", bookmarkId)
-          .eq("user_id", user.id);
+        // TODO: Replace with actual API call
+        // await fetch(`/api/bookmarks/${bookmarkId}`, { method: 'DELETE' });
 
-        if (error) {
-          console.error("Error deleting bookmark:", error);
-          return false;
+        // Update localStorage
+        const allBookmarks = getAllBookmarks();
+        if (allBookmarks[user.id]?.[bookId]) {
+          allBookmarks[user.id][bookId] = allBookmarks[user.id][bookId].filter(
+            (b) => b.id !== bookmarkId
+          );
+          saveAllBookmarks(allBookmarks);
         }
 
         setBookmarks((prev) => prev.filter((b) => b.id !== bookmarkId));
@@ -142,7 +186,7 @@ export function useBookmarks(bookId: string | undefined) {
         return false;
       }
     },
-    [user]
+    [user, bookId]
   );
 
   return {
@@ -153,4 +197,40 @@ export function useBookmarks(bookId: string | undefined) {
     deleteBookmark,
     isAuthenticated: !!user,
   };
+}
+
+// ============================================
+// Get all bookmarks for a user (for Library page)
+// ============================================
+export function useAllBookmarks() {
+  const { user } = useAuth();
+  const [allBookmarks, setAllBookmarks] = useState<Bookmark[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+
+    // TODO: Replace with API call: GET /api/bookmarks?userId={userId}
+    const loadAllBookmarks = () => {
+      try {
+        const stored = getAllBookmarks();
+        const userBookmarks = stored[user.id];
+        if (userBookmarks) {
+          const all = Object.values(userBookmarks).flat();
+          setAllBookmarks(all);
+        }
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Failed to load all bookmarks:", err);
+        setIsLoading(false);
+      }
+    };
+
+    loadAllBookmarks();
+  }, [user]);
+
+  return { allBookmarks, isLoading };
 }
