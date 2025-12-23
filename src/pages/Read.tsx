@@ -13,7 +13,9 @@ import {
   Plus,
   Bookmark,
   BookmarkCheck,
-  Trash2
+  Trash2,
+  Highlighter,
+  Quote
 } from "lucide-react";
 import {
   Sheet,
@@ -30,6 +32,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useReadingProgress } from "@/hooks/useReadingProgress";
@@ -54,8 +61,16 @@ export default function Read() {
   const { progress, isLoading, saveProgress, isAuthenticated } = useReadingProgress(id);
   const { bookmarks, addBookmark, deleteBookmark } = useBookmarks(id);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [bookmarkDialogOpen, setBookmarkDialogOpen] = useState(false);
   const [bookmarkNote, setBookmarkNote] = useState("");
+  const [selectedText, setSelectedText] = useState("");
+  const [highlightPopover, setHighlightPopover] = useState<{
+    x: number;
+    y: number;
+    visible: boolean;
+  }>({ x: 0, y: 0, visible: false });
+  const [highlightNote, setHighlightNote] = useState("");
   
   // Determine current chapter - use URL param if set, otherwise use saved progress
   const currentChapterIndex = chapterParam 
@@ -117,6 +132,38 @@ export default function Read() {
     window.scrollTo(0, 0);
   }, [currentChapterIndex]);
 
+  // Handle text selection for highlighting
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      const selection = window.getSelection();
+      const text = selection?.toString().trim();
+      
+      if (text && text.length > 0 && contentRef.current?.contains(selection?.anchorNode || null)) {
+        const range = selection?.getRangeAt(0);
+        if (range) {
+          const rect = range.getBoundingClientRect();
+          setSelectedText(text);
+          setHighlightPopover({
+            x: rect.left + rect.width / 2,
+            y: rect.top - 10,
+            visible: true,
+          });
+        }
+      } else {
+        // Delay hiding to allow clicking the popover
+        setTimeout(() => {
+          const selection = window.getSelection();
+          if (!selection?.toString().trim()) {
+            setHighlightPopover((prev) => ({ ...prev, visible: false }));
+          }
+        }, 200);
+      }
+    };
+
+    document.addEventListener("selectionchange", handleSelectionChange);
+    return () => document.removeEventListener("selectionchange", handleSelectionChange);
+  }, []);
+
   if (!book || !currentChapter) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -162,6 +209,28 @@ export default function Read() {
       });
       setBookmarkNote("");
       setBookmarkDialogOpen(false);
+    }
+  };
+
+  const handleSaveHighlight = async () => {
+    if (!selectedText) return;
+    
+    const result = await addBookmark(
+      currentChapterIndex + 1,
+      scrollProgress,
+      highlightNote || undefined,
+      selectedText
+    );
+    
+    if (result) {
+      toast({
+        title: "Highlight saved",
+        description: `"${selectedText.slice(0, 30)}${selectedText.length > 30 ? "..." : ""}"`,
+      });
+      setSelectedText("");
+      setHighlightNote("");
+      setHighlightPopover({ x: 0, y: 0, visible: false });
+      window.getSelection()?.removeAllRanges();
     }
   };
 
@@ -317,16 +386,33 @@ export default function Read() {
                           {bookmarks.map((bookmark) => (
                             <div
                               key={bookmark.id}
-                              className="group p-3 rounded-md border border-border hover:bg-muted/50 transition-colors"
+                              className={cn(
+                                "group p-3 rounded-md border transition-colors",
+                                bookmark.highlighted_text 
+                                  ? "border-primary/30 bg-primary/5 hover:bg-primary/10" 
+                                  : "border-border hover:bg-muted/50"
+                              )}
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <button
                                   onClick={() => goToChapter(bookmark.chapter_number)}
                                   className="text-left flex-1"
                                 >
-                                  <p className="text-sm font-medium text-foreground">
-                                    Chapter {bookmark.chapter_number}
-                                  </p>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    {bookmark.highlighted_text ? (
+                                      <Highlighter className="h-3 w-3 text-primary" />
+                                    ) : (
+                                      <Bookmark className="h-3 w-3 text-muted-foreground" />
+                                    )}
+                                    <p className="text-sm font-medium text-foreground">
+                                      Chapter {bookmark.chapter_number}
+                                    </p>
+                                  </div>
+                                  {bookmark.highlighted_text && (
+                                    <p className="text-sm text-foreground/80 italic border-l-2 border-primary/50 pl-2 my-2 line-clamp-3">
+                                      "{bookmark.highlighted_text}"
+                                    </p>
+                                  )}
                                   {bookmark.note && (
                                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                       {bookmark.note}
@@ -385,7 +471,8 @@ export default function Read() {
 
           {/* Chapter Content */}
           <div 
-            className="prose-reading space-y-6"
+            ref={contentRef}
+            className="prose-reading space-y-6 select-text"
             style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}
           >
             {chapterContent.map((paragraph, index) => (
@@ -467,6 +554,57 @@ export default function Read() {
           </div>
         </div>
       </footer>
+
+      {/* Highlight Popover - appears when text is selected */}
+      {highlightPopover.visible && isAuthenticated && selectedText && (
+        <div
+          className="fixed z-[100] animate-in fade-in-0 zoom-in-95"
+          style={{
+            left: `${highlightPopover.x}px`,
+            top: `${highlightPopover.y}px`,
+            transform: "translate(-50%, -100%)",
+          }}
+        >
+          <div className="bg-background border border-border rounded-lg shadow-lg p-3 min-w-[200px]">
+            <div className="mb-2">
+              <p className="text-xs text-muted-foreground mb-1">Selected text:</p>
+              <p className="text-sm italic line-clamp-2">
+                "{selectedText.slice(0, 60)}{selectedText.length > 60 ? "..." : ""}"
+              </p>
+            </div>
+            <Input
+              placeholder="Add a note (optional)"
+              value={highlightNote}
+              onChange={(e) => setHighlightNote(e.target.value)}
+              className="mb-2 h-8 text-sm"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="flex-1 h-8 text-xs"
+                onClick={() => {
+                  setHighlightPopover({ x: 0, y: 0, visible: false });
+                  window.getSelection()?.removeAllRanges();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                size="sm" 
+                variant="editorial" 
+                className="flex-1 h-8 text-xs gap-1"
+                onClick={handleSaveHighlight}
+              >
+                <Highlighter className="h-3 w-3" />
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bookmark Dialog */}
       <Dialog open={bookmarkDialogOpen} onOpenChange={setBookmarkDialogOpen}>
         <DialogContent onClick={(e) => e.stopPropagation()}>
