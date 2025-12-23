@@ -1,6 +1,4 @@
 wistaar
-
-
 🌱 Wistaar
 
 Wistaar is a modern, scalable web platform built with performance, simplicity, and growth in mind.
