@@ -1,16 +1,16 @@
 import { motion } from "framer-motion";
 import { ReactNode, useState, useEffect } from "react";
-import PageSkeleton from "./PageSkeleton";
 
 interface PageTransitionProps {
   children: ReactNode;
   showSkeleton?: boolean;
+  skeleton?: ReactNode;
 }
 
 const pageVariants = {
   initial: {
     opacity: 0,
-    y: 12,
+    y: 8,
   },
   animate: {
     opacity: 1,
@@ -18,17 +18,23 @@ const pageVariants = {
   },
   exit: {
     opacity: 0,
-    y: -8,
+    y: -4,
   },
 };
 
 const pageTransition = {
   type: "tween" as const,
-  ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-  duration: 0.35,
+  ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+  duration: 0.3,
 };
 
-const PageTransition = ({ children, showSkeleton = false }: PageTransitionProps) => {
+const spinnerVariants = {
+  initial: { opacity: 0, scale: 0.9 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.95 },
+};
+
+const PageTransition = ({ children, showSkeleton = false, skeleton }: PageTransitionProps) => {
   const [isLoading, setIsLoading] = useState(showSkeleton);
 
   useEffect(() => {
@@ -43,13 +49,19 @@ const PageTransition = ({ children, showSkeleton = false }: PageTransitionProps)
   if (isLoading) {
     return (
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="min-h-screen flex items-center justify-center"
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        variants={spinnerVariants}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="min-h-screen flex items-center justify-center bg-background"
       >
-        <div className="w-5 h-5 border-2 border-muted-foreground/30 border-t-foreground rounded-full animate-spin" />
+        {skeleton || (
+          <div className="relative">
+            <div className="w-6 h-6 border-2 border-muted rounded-full" />
+            <div className="absolute inset-0 w-6 h-6 border-2 border-transparent border-t-foreground/70 rounded-full animate-spin" />
+          </div>
+        )}
       </motion.div>
     );
   }

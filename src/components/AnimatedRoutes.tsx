@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "./PageTransition";
+import { ExploreSkeleton, LibrarySkeleton, BookDetailSkeleton } from "./PageSkeletons";
 import Index from "@/pages/Index";
 import Explore from "@/pages/Explore";
 import Publish from "@/pages/Publish";
@@ -27,7 +28,7 @@ const AnimatedRoutes = () => {
         <Route
           path="/explore"
           element={
-            <PageTransition>
+            <PageTransition skeleton={<ExploreSkeleton />}>
               <Explore />
             </PageTransition>
           }
@@ -51,7 +52,7 @@ const AnimatedRoutes = () => {
         <Route
           path="/book/:id"
           element={
-            <PageTransition>
+            <PageTransition skeleton={<BookDetailSkeleton />}>
               <BookDetail />
             </PageTransition>
           }
@@ -67,7 +68,7 @@ const AnimatedRoutes = () => {
         <Route
           path="/library"
           element={
-            <PageTransition>
+            <PageTransition skeleton={<LibrarySkeleton />}>
               <Library />
             </PageTransition>
           }
