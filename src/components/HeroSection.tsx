@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
-    <section className="min-h-[90vh] flex items-center justify-center px-6">
+    <section className="min-h-[85vh] flex items-center justify-center pt-16">
       <div className="container-main text-center">
         <p className="text-sm tracking-widest uppercase text-muted-foreground mb-6 fade-up">
           A sanctuary for stories

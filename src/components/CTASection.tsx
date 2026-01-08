@@ -14,7 +14,7 @@ const CTASection = () => {
           your stories, Wistaar welcomes you.
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link to="/explore">
             <Button size="lg" className="gap-2 px-8">
               Start Reading
@@ -27,7 +27,6 @@ const CTASection = () => {
             </Button>
           </Link>
         </div>
-        
       </div>
     </section>
   );
