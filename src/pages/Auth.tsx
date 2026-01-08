@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -139,68 +140,78 @@ export default function Auth() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="h-12 bg-background border-border focus:border-accent"
-                disabled={isLoading}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="h-12 bg-background border-border focus:border-accent"
-                disabled={isLoading}
-              />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
-            </div>
-
-            {isSignUp && (
+          <AnimatePresence mode="wait">
+            <motion.form
+              key={isSignUp ? 'signup' : 'signin'}
+              onSubmit={handleSubmit}
+              className="space-y-6"
+              initial={{ x: isSignUp ? 50 : -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: isSignUp ? -50 : 50, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-foreground">Confirm Password</Label>
+                <Label htmlFor="email" className="text-foreground">Email</Label>
                 <Input
-                  id="confirmPassword"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="h-12 bg-background border-border focus:border-accent"
+                  disabled={isLoading}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-foreground">Password</Label>
+                <Input
+                  id="password"
                   type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="h-12 bg-background border-border focus:border-accent"
                   disabled={isLoading}
                 />
-                {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password}</p>
                 )}
               </div>
-            )}
 
-            <Button 
-              type="submit" 
-              size="lg" 
-              className="w-full h-12"
-              disabled={isLoading}
-            >
-              {isLoading 
-                ? (isSignUp ? 'Creating account...' : 'Signing in...') 
-                : (isSignUp ? 'Create account' : 'Sign in')}
-            </Button>
-          </form>
+              {isSignUp && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-foreground">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="h-12 bg-background border-border focus:border-accent"
+                    disabled={isLoading}
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+                  )}
+                </div>
+              )}
+
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full h-12"
+                disabled={isLoading}
+              >
+                {isLoading 
+                  ? (isSignUp ? 'Creating account...' : 'Signing in...') 
+                  : (isSignUp ? 'Create account' : 'Sign in')}
+              </Button>
+            </motion.form>
+          </AnimatePresence>
 
           <div className="mt-8 text-center">
             <p className="text-muted-foreground">
