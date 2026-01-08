@@ -2,48 +2,34 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   const links = [
-    { title: "Readers", items: [{ to: "/explore", label: "Explore" }, { to: "/library", label: "Library" }] },
-    { title: "Authors", items: [{ to: "/publish", label: "Publish" }, { to: "/pricing", label: "Pricing" }] },
-    { title: "Company", items: [{ to: "/about", label: "About" }, { to: "/privacy", label: "Privacy" }] },
+    { to: "/explore", label: "Explore" },
+    { to: "/library", label: "Library" },
+    { to: "/publish", label: "Publish" },
   ];
 
   return (
-    <footer className="border-t border-border py-16">
+    <footer className="border-t border-border py-12">
       <div className="container-main">
-        <div className="grid md:grid-cols-4 gap-12 mb-12">
-          <div>
-            <Link to="/" className="text-xl font-serif">
-              Wistaar
-            </Link>
-            <p className="text-sm text-muted-foreground mt-3 max-w-xs">
-              A platform for authors and readers who value simplicity.
-            </p>
-          </div>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <Link to="/" className="text-xl font-serif">
+            Wistaar
+          </Link>
 
-          {links.map((section) => (
-            <div key={section.title}>
-              <h4 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
-                {section.title}
-              </h4>
-              <ul className="space-y-3">
-                {section.items.map((link) => (
-                  <li key={link.to}>
-                    <Link 
-                      to={link.to} 
-                      className="text-sm text-foreground hover:text-accent transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+          <nav className="flex items-center gap-6">
+            {links.map((link) => (
+              <Link 
+                key={link.to}
+                to={link.to} 
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
-        <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Wistaar</p>
-          <p>Made with care in India</p>
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} Wistaar
+          </p>
         </div>
       </div>
     </footer>
