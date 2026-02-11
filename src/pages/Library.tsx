@@ -3,12 +3,12 @@ import { Link, Navigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Play, Clock, Library as LibraryIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAllReadingProgress, ReadingProgress } from "@/hooks/useReadingProgress";
 import { mockBooks, Book } from "@/data/books";
+import ReadingProgress3D from "@/components/ReadingProgress3D";
 
 interface BookWithProgress extends Book {
   progress: ReadingProgress;
@@ -24,20 +24,13 @@ export default function Library() {
       .map((progress) => {
         const book = mockBooks.find((b) => b.id === progress.book_id);
         if (!book) return null;
-        
         const progressPercent = (progress.current_chapter / book.chapters.length) * 100;
-        
-        return {
-          ...book,
-          progress,
-          progressPercent,
-        };
+        return { ...book, progress, progressPercent };
       })
       .filter((b): b is BookWithProgress => b !== null)
       .sort((a, b) => new Date(b.progress.last_read_at).getTime() - new Date(a.progress.last_read_at).getTime());
   }, [allProgress]);
 
-  // Redirect to auth if not logged in
   if (!authLoading && !user) {
     return <Navigate to="/auth" replace />;
   }
@@ -49,7 +42,6 @@ export default function Library() {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
-
     if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -110,7 +102,6 @@ export default function Library() {
           {/* Books Grid */}
           {!isLoading && !authLoading && booksWithProgress.length > 0 && (
             <>
-              {/* Currently Reading Section */}
               <section className="mb-12">
                 <h2 className="text-xl font-display font-medium text-foreground mb-6">
                   Continue Reading
@@ -121,57 +112,50 @@ export default function Library() {
                       key={book.id}
                       className="group bg-card rounded-lg border border-border overflow-hidden hover:border-primary/50 transition-colors"
                     >
-                      {/* Book Cover */}
-                      <Link to={`/book/${book.id}`}>
-                        <div className={`aspect-[16/9] ${book.coverColor} flex items-center justify-center`}>
-                          <div className="text-center p-4">
-                            <h3 className="font-display text-lg font-medium text-foreground leading-tight">
+                      <div className="flex gap-5 p-5">
+                        {/* 3D Progress Ring */}
+                        <div className="flex-shrink-0 flex items-center">
+                          <ReadingProgress3D
+                            percent={book.progressPercent}
+                            size={80}
+                            strokeWidth={6}
+                          />
+                        </div>
+
+                        {/* Book Info */}
+                        <div className="flex-1 min-w-0">
+                          <Link to={`/book/${book.id}`}>
+                            <h3 className="font-display text-lg font-medium text-foreground leading-tight line-clamp-1 hover:text-accent transition-colors">
                               {book.title}
                             </h3>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {book.author}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
-
-                      {/* Book Info */}
-                      <div className="p-5">
-                        <div className="flex items-center justify-between mb-3">
-                          <Badge variant="secondary" className="text-xs">
-                            Chapter {book.progress.current_chapter} of {book.chapters.length}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatLastRead(book.progress.last_read_at)}
-                          </span>
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div className="mb-4">
-                          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                            <span>Progress</span>
-                            <span>{Math.round(book.progressPercent)}%</span>
-                          </div>
-                          <Progress value={book.progressPercent} className="h-1.5" />
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex gap-2">
-                          <Link 
-                            to={`/read/${book.id}?chapter=${book.progress.current_chapter}`}
-                            className="flex-1"
-                          >
-                            <Button size="sm" className="w-full gap-2">
-                              <Play className="h-4 w-4" />
-                              Continue
-                            </Button>
                           </Link>
-                          <Link to={`/book/${book.id}`}>
-                            <Button variant="outline" size="sm">
-                              Details
-                            </Button>
-                          </Link>
+                          <p className="text-sm text-muted-foreground mt-0.5">
+                            {book.author}
+                          </p>
+
+                          <div className="flex items-center gap-3 mt-2">
+                            <Badge variant="secondary" className="text-xs">
+                              Ch {book.progress.current_chapter}/{book.chapters.length}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatLastRead(book.progress.last_read_at)}
+                            </span>
+                          </div>
+
+                          <div className="flex gap-2 mt-3">
+                            <Link to={`/read/${book.id}?chapter=${book.progress.current_chapter}`}>
+                              <Button size="sm" className="gap-2">
+                                <Play className="h-4 w-4" />
+                                Continue
+                              </Button>
+                            </Link>
+                            <Link to={`/book/${book.id}`}>
+                              <Button variant="outline" size="sm">
+                                Details
+                              </Button>
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </article>
@@ -179,7 +163,6 @@ export default function Library() {
                 </div>
               </section>
 
-              {/* Discover More */}
               <section className="pt-8 border-t border-border">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-display font-medium text-foreground">
