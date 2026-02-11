@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import { mockBooks } from "@/data/books";
+import { getDailyContent } from "@/data/dailyContent";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -258,8 +259,8 @@ export default function Read() {
     });
   };
 
-  // Generate mock chapter content
-  const chapterContent = generateChapterContent(currentChapter.title, book.title);
+  // Get daily rotating content for this chapter
+  const chapterContent = getDailyContent(currentChapter.title, book.title, currentChapter.number);
 
   return (
     <div className="min-h-screen bg-background">
@@ -655,31 +656,3 @@ export default function Read() {
   );
 }
 
-// Helper function to generate mock chapter content
-function generateChapterContent(chapterTitle: string, bookTitle: string): string[] {
-  const paragraphs = [
-    `The morning light filtered through the curtains, casting long shadows across the room. It was in moments like these that the true nature of things revealed itself, slowly and deliberately, like a flower unfurling its petals to greet the sun.`,
-    
-    `There was something profound about beginnings, about the way they carried within them the seeds of everything that would follow. Every story, every journey, every transformation started with a single moment of decision, a turning point that would only become visible in hindsight.`,
-    
-    `The path ahead was unclear, shrouded in the mist of uncertainty that accompanies all great endeavors. But clarity, as they say, comes not from seeing the whole journey at once, but from taking the first step and trusting that the next will reveal itself in time.`,
-    
-    `"Understanding," the old master had once said, "is not something you achieve. It is something that achieves you, when you have finally stopped trying to grasp it." These words echoed now, carrying new meaning with each passing day.`,
-    
-    `The landscape stretched endlessly before them, a canvas of possibility painted in hues of amber and gold. Each hill, each valley, held its own story, its own secrets waiting to be discovered by those patient enough to listen.`,
-    
-    `Time, that most mysterious of companions, seemed to move differently here. Minutes stretched into hours, hours condensed into moments, and in between, something essential was happening—a transformation too subtle to name but too significant to ignore.`,
-    
-    `There were lessons everywhere for those who knew how to look. In the way the river carved its path through stone, not with force but with persistence. In the way the trees bent with the wind rather than against it. In the way silence could speak louder than any words.`,
-    
-    `The characters in this chapter of life were many and varied. Some appeared briefly, leaving impressions that would last forever. Others stayed longer, their presence woven into the very fabric of the narrative. And some were yet to arrive, their entrances still waiting in the wings.`,
-    
-    `As the day progressed, new revelations came to light. What had seemed certain became questionable. What had been overlooked emerged as crucial. The story was writing itself, and all one could do was pay attention and participate with an open heart.`,
-    
-    `Evening approached, bringing with it the contemplative quiet that follows a day of discovery. The questions remained, as they always do, but they felt different now—less like obstacles and more like invitations to go deeper, to understand more fully, to embrace the mystery rather than solve it.`,
-    
-    `And so the chapter drew to its close, not with answers but with a deeper appreciation for the questions. Tomorrow would bring new challenges, new insights, new opportunities for growth. But for now, this moment was enough—this pause between what was and what was yet to be.`,
-  ];
-
-  return paragraphs;
-}
