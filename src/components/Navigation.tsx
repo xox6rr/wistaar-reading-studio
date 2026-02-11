@@ -70,16 +70,38 @@ const Navigation = () => {
           <div className="hidden md:flex items-center gap-2">
             <ThemeToggle />
             {loading ? (
-              <div className="h-9 w-20 bg-muted animate-pulse rounded" />
+              <div className="h-8 w-8 bg-muted animate-pulse rounded-full" />
             ) : user ? (
-              <div className="flex items-center gap-1">
-                <Link to="/profile">
-                  <Button variant="ghost" size="sm">Profile</Button>
-                </Link>
-                <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                  Sign out
-                </Button>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    <Avatar className="h-8 w-8 cursor-pointer">
+                      <AvatarImage src={user.avatar} alt={user.name || user.email} />
+                      <AvatarFallback className="bg-accent text-accent-foreground text-xs font-serif">
+                        {(user.name || user.email || "U").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium truncate">{user.name || "User"}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Link to="/auth">
                 <Button size="sm">Get Started</Button>
