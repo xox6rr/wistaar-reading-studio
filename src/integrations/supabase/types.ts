@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           admin_feedback: string | null
           author_id: string
+          cover_color: string
           cover_image_url: string | null
           description: string
           free_chapters: number
@@ -25,15 +26,19 @@ export type Database = {
           id: string
           manuscript_url: string | null
           price: number
+          rating: number
+          read_count: number
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
           submitted_at: string
           title: string
+          total_chapters: number
         }
         Insert: {
           admin_feedback?: string | null
           author_id: string
+          cover_color?: string
           cover_image_url?: string | null
           description: string
           free_chapters?: number
@@ -41,15 +46,19 @@ export type Database = {
           id?: string
           manuscript_url?: string | null
           price?: number
+          rating?: number
+          read_count?: number
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
           submitted_at?: string
           title: string
+          total_chapters?: number
         }
         Update: {
           admin_feedback?: string | null
           author_id?: string
+          cover_color?: string
           cover_image_url?: string | null
           description?: string
           free_chapters?: number
@@ -57,11 +66,14 @@ export type Database = {
           id?: string
           manuscript_url?: string | null
           price?: number
+          rating?: number
+          read_count?: number
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
           submitted_at?: string
           title?: string
+          total_chapters?: number
         }
         Relationships: []
       }
