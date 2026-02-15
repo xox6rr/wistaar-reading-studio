@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -15,6 +16,7 @@ import { Menu, X, User, LogOut } from "lucide-react";
 
 const Navigation = () => {
   const { user, signOut, loading } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -36,6 +38,7 @@ const Navigation = () => {
     { to: "/explore", label: "Explore" },
     { to: "/library", label: "Library", requiresAuth: true },
     { to: "/publish", label: "Publish" },
+    ...(isAdmin ? [{ to: "/admin", label: "Admin" }] : []),
   ].filter((link) => !link.requiresAuth || user);
 
   const isActive = (path: string) => location.pathname === path;
