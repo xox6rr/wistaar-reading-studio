@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, FileText, Image as ImageIcon, DollarSign } from 'lucide-react';
+import { Upload, FileText, Image as ImageIcon, IndianRupee } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { z } from 'zod';
@@ -279,18 +279,18 @@ export default function BookSubmit() {
               {isPremium && (
                 <div className="space-y-4 pt-2">
                   <div className="space-y-2">
-                    <Label htmlFor="price">Price ($) *</Label>
+                    <Label htmlFor="price">Price (₹) *</Label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         id="price"
                         type="number"
-                        min="0.99"
-                        max="99.99"
-                        step="0.01"
+                        min="29"
+                        max="9999"
+                        step="1"
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
-                        placeholder="4.99"
+                        placeholder="199"
                         className="h-12 pl-9"
                         disabled={isSubmitting}
                       />
