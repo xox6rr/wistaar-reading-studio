@@ -12,11 +12,14 @@ import {
 import SearchBar from "@/components/SearchBar";
 import FilterSelect from "@/components/FilterSelect";
 import ExploreBookCard from "@/components/ExploreBookCard";
-import { mockBooks, genres, authors, sortOptions } from "@/data/books";
+import ApprovedBookCard from "@/components/ApprovedBookCard";
+import { mockBooks, genres, sortOptions } from "@/data/books";
+import { useApprovedBooks } from "@/hooks/useApprovedBooks";
 
 type PriceFilter = "all" | "free" | "premium";
 
 const Explore = () => {
+  const { data: approvedBooks = [], isLoading } = useApprovedBooks();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("All Genres");
   const [selectedAuthor, setSelectedAuthor] = useState("All Authors");
@@ -24,10 +27,37 @@ const Explore = () => {
   const [sortBy, setSortBy] = useState("relevance");
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredBooks = useMemo(() => {
-    let result = [...mockBooks];
+  // Combine approved books with mock books as fallback
+  const allBooks = useMemo(() => {
+    if (approvedBooks.length > 0) {
+      // Map approved books to a common shape for filtering
+      return approvedBooks.map((b) => ({
+        ...b,
+        isApproved: true as const,
+        publishedDate: b.publishedDate,
+      }));
+    }
+    // Fallback to mock data when no approved books
+    return mockBooks.map((b) => ({
+      ...b,
+      isApproved: false as const,
+      priceAmount: 0,
+      freeChapters: 0,
+      coverImageUrl: null,
+      readCount: 0,
+      totalChapters: b.chapters.length,
+    }));
+  }, [approvedBooks]);
 
-    // Search filter
+  // Dynamic authors list
+  const authors = useMemo(() => {
+    const uniqueAuthors = [...new Set(allBooks.map((b) => b.author))];
+    return ["All Authors", ...uniqueAuthors.sort()];
+  }, [allBooks]);
+
+  const filteredBooks = useMemo(() => {
+    let result = [...allBooks];
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
@@ -38,22 +68,18 @@ const Explore = () => {
       );
     }
 
-    // Genre filter
     if (selectedGenre !== "All Genres") {
       result = result.filter((book) => book.genre === selectedGenre);
     }
 
-    // Author filter
     if (selectedAuthor !== "All Authors") {
       result = result.filter((book) => book.author === selectedAuthor);
     }
 
-    // Price filter
     if (priceFilter !== "all") {
       result = result.filter((book) => book.price === priceFilter);
     }
 
-    // Sorting
     switch (sortBy) {
       case "newest":
         result.sort((a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime());
@@ -75,7 +101,7 @@ const Explore = () => {
     }
 
     return result;
-  }, [searchQuery, selectedGenre, selectedAuthor, priceFilter, sortBy]);
+  }, [searchQuery, selectedGenre, selectedAuthor, priceFilter, sortBy, allBooks]);
 
   const activeFiltersCount = [
     selectedGenre !== "All Genres",
@@ -211,18 +237,26 @@ const Explore = () => {
 
         {/* Results Count */}
         <div className="mb-8">
-          <p className="text-sm text-muted-foreground">
-            {filteredBooks.length} {filteredBooks.length === 1 ? "book" : "books"} found
-            {searchQuery && ` for "${searchQuery}"`}
-          </p>
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading books...</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {filteredBooks.length} {filteredBooks.length === 1 ? "book" : "books"} found
+              {searchQuery && ` for "${searchQuery}"`}
+            </p>
+          )}
         </div>
 
         {/* Books Grid */}
         {filteredBooks.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-8">
-            {filteredBooks.map((book) => (
-              <ExploreBookCard key={book.id} book={book} />
-            ))}
+            {filteredBooks.map((book) =>
+              book.isApproved ? (
+                <ApprovedBookCard key={book.id} book={book} />
+              ) : (
+                <ExploreBookCard key={book.id} book={book as any} />
+              )
+            )}
           </div>
         ) : (
           <div className="text-center py-20">
