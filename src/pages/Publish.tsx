@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -64,9 +65,9 @@ const Publish = () => {
             No gatekeepers. No compromise. Just your words, reaching the readers who need them.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg">
-              Start Publishing
-            </Button>
+            <Link to="/author/signup">
+              <Button size="lg">Start Publishing</Button>
+            </Link>
             <Button variant="outline" size="lg">
               Learn More
             </Button>
@@ -158,9 +159,9 @@ const Publish = () => {
           <p className="text-muted-foreground mb-8">
             Join thousands of authors who trust Wistaar with their stories.
           </p>
-          <Button size="lg">
-            Create Author Account
-          </Button>
+          <Link to="/author/signup">
+            <Button size="lg">Create Author Account</Button>
+          </Link>
         </div>
       </section>
 
