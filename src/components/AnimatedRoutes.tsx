@@ -7,6 +7,10 @@ import Index from "@/pages/Index";
 import Explore from "@/pages/Explore";
 import Publish from "@/pages/Publish";
 import Auth from "@/pages/Auth";
+import AuthorSignup from "@/pages/AuthorSignup";
+import AuthorDashboard from "@/pages/AuthorDashboard";
+import BookSubmit from "@/pages/BookSubmit";
+import AdminDashboard from "@/pages/AdminDashboard";
 import BookDetail from "@/pages/BookDetail";
 import Read from "@/pages/Read";
 import Library from "@/pages/Library";
@@ -50,6 +54,38 @@ const AnimatedRoutes = () => {
           element={
             <PageTransition>
               <Auth />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/author/signup"
+          element={
+            <PageTransition>
+              <AuthorSignup />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/author/dashboard"
+          element={
+            <PageTransition>
+              <AuthorDashboard />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/author/submit"
+          element={
+            <PageTransition>
+              <BookSubmit />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <PageTransition>
+              <AdminDashboard />
             </PageTransition>
           }
         />
