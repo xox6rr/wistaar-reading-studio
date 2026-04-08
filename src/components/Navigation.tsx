@@ -21,6 +21,7 @@ import NotificationBell from "@/components/NotificationBell";
 const Navigation = () => {
   const { user, signOut, loading } = useAuth();
   const { isAdmin } = useIsAdmin();
+  const { isAuthor } = useIsAuthor();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
