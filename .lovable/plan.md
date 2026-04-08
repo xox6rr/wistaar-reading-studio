@@ -1,75 +1,43 @@
 
-Goal: restore login access and make sure authors can actually reach the books they uploaded.
 
-What I found
-- There is an immediate backend issue right now: the project is still waking up, and the database is not accepting connections yet. While that is happening, login can fail even if the app code is correct.
-- There is also a real app bug in the author flow:
-  - `/author/submit` only checks that a user is signed in.
-  - The current insert rule for `book_submissions` only checks `author_id = auth user`.
-  - But `/author/dashboard` blocks users unless they have `user_roles.role = 'author'`.
-- Result: a signed-in user can submit a book without a proper author role, then later get locked out from the dashboard that should show their uploaded books.
-- There is also a UX gap: there is no obvious Author Dashboard link in navigation, and the Publish page stays in “marketing mode” even for logged-in authors.
-- One more expected-but-confusing behavior: uploaded books only become public after admin approval, so pending books will not appear in Explore.
+## Problem
 
-Plan
-1. Fix the immediate login path
-- First re-test after Lovable Cloud fully wakes up.
-- If login only fails in preview after the backend is healthy, treat it as a preview-only auth issue; do not try to “fix” it with CORS changes or fetch overrides.
-- Improve auth error handling so the app clearly distinguishes:
-  - backend unavailable
-  - email not confirmed
-  - wrong credentials
+The edge function logs show the exact error:
 
-2. Repair the author access flow
-- Replace the fragile `localStorage`-only author bootstrap with a reusable “ensure author access” helper.
-- On author sign-in / author onboarding, make it idempotently:
-  - create the `author` role if missing
-  - update the profile name if needed
-- Keep roles in `user_roles` as the source of truth.
+```
+Failed to parse AI response: ```json\n[\n  {\n    "chapter_number": 1, ...
+```
 
-3. Restore access for people who already uploaded books
-- Add a migration that backfills missing `author` roles for any user who already owns rows in `book_submissions`.
-- This is the key step to recover existing accounts that can upload but cannot access their own author area.
+The AI **is** extracting chapters successfully, but the response is getting **truncated** — the JSON is cut off mid-way, so `JSON.parse()` fails. This happens because:
 
-4. Enforce the same rule everywhere
-- Tighten the `book_submissions` insert policy so only real authors can submit books.
-- Add the same author-role check in `BookSubmit.tsx` before uploads begin, with a redirect/toast to author onboarding if needed.
+1. **Large PDFs produce huge JSON** — the full content of every chapter serialized as JSON can exceed the `max_tokens: 100000` limit or hit the model's output cap.
+2. **Scanned/image PDFs** — some PDFs contain images instead of text, so the AI gets limited/garbled content via the base64 image approach.
 
-5. Make uploaded books reachable in the UI
-- Add an Author Dashboard link in navigation when the user is an author.
-- Make `Publish.tsx` context-aware:
-  - author: “Go to dashboard” / “Submit new book”
-  - logged-in non-author: “Become an author”
-  - signed-out user: author signup
-- In `AuthorDashboard.tsx`, add clear actions:
-  - approved: view live book / read
-  - pending or rejected: view submission details and clear status messaging
-- Explicitly state that pending books are private until approved.
+## Fix: Two-pass extraction approach
 
-6. Fix the adjacent purchase/notification regression
-- The current purchase flow tries to create a self-notification from the client, but notification inserts are now admin-only.
-- That should be fixed too, because it can break post-purchase access to premium books.
+### Step 1 — Extract chapter structure first (titles + boundaries only)
 
-Files likely touched
-- `src/hooks/useAuth.tsx`
-- `src/pages/Auth.tsx`
-- `src/pages/AuthorSignup.tsx`
-- `src/pages/AuthorDashboard.tsx`
-- `src/pages/BookSubmit.tsx`
-- `src/components/Navigation.tsx`
-- `src/pages/Publish.tsx`
-- `src/hooks/usePurchases.ts`
-- new backend migration(s) for `user_roles`, `book_submissions`, and `notifications`
+Change the AI prompt to a **lightweight first pass** that returns only chapter titles and page ranges — no content. This keeps the response small and parseable.
 
-Technical details
-- Backfill before tightening permissions, so existing authors are not locked out.
-- Keep public book visibility limited to approved books; the fix is author access and clearer UI, not making draft submissions public.
-- Do not edit the generated backend client file.
-- Do not try to fix preview auth failures with CORS or custom fetch hacks.
+### Step 2 — Extract content per chapter in separate calls
 
-Success checks
-- Existing user with uploaded books can open Author Dashboard and see submissions.
-- New author can sign up, verify, sign in, and submit without getting stuck.
-- Non-authors cannot successfully submit books until they become authors.
-- Pending books are visible to their author in dashboard but not in Explore.
-- Buying a premium book still unlocks access and notifications work correctly.
+For each chapter, make a focused AI call asking for just that chapter's text. This avoids hitting token limits.
+
+### Step 3 — Better JSON parsing with truncation recovery
+
+Add fallback parsing: if the JSON is truncated, attempt to repair it by closing open strings/arrays/objects. Also add a `finish_reason` check — if the model returns `length` instead of `stop`, we know it was truncated and can retry with smaller scope.
+
+### Step 4 — Handle scanned PDFs
+
+Add a fallback: if the PDF produces poor results via the current approach, use native text extraction first (the Lovable AI stack overflow pattern), and only fall back to vision-based OCR if native extraction yields insufficient text.
+
+## Files to change
+
+- `supabase/functions/extract-chapters/index.ts` — rewrite to use two-pass extraction with per-chapter calls and truncation handling
+
+## What this fixes
+
+- PDFs with many chapters that exceed token limits
+- Scanned PDFs that produce garbled or empty text
+- The specific `Failed to parse AI response` error you're seeing repeatedly
+
