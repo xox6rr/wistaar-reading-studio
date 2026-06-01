@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import WistiesBalanceCard from "@/components/WistiesBalanceCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -177,6 +178,8 @@ const Profile = () => {
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
+
+          <WistiesBalanceCard />
 
           <Card>
             <CardHeader>

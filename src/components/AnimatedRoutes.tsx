@@ -23,6 +23,7 @@ const BookReader = lazy(() => import("@/pages/BookReader"));
 const Library = lazy(() => import("@/pages/Library"));
 const Cart = lazy(() => import("@/pages/Cart"));
 const Profile = lazy(() => import("@/pages/Profile"));
+const Wisties = lazy(() => import("@/pages/Wisties"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const LazyFallback = () => (
@@ -149,6 +150,14 @@ const AnimatedRoutes = () => {
               element={
                 <PageTransition>
                   <Profile />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/profile/wisties"
+              element={
+                <PageTransition>
+                  <Wisties />
                 </PageTransition>
               }
             />
