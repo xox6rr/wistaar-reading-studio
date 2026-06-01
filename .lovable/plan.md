@@ -1,45 +1,136 @@
-# Quieter chapter transitions — feel like a real book
+## Wisties — Credit Store System
 
-You're right: a popping "Chapter 4 complete 🎉" toast breaks immersion. A real book never congratulates you — the page itself just changes. Here's what I'd do instead of the confetti spec from the earlier prompt.
+Refund-as-store-credit instead of cash. 1 Wistie = ₹1. User ke profile pe coin-themed balance card, aur dedicated `/profile/wisties` page detailed transaction table ke saath.
 
-## What to drop
+---
 
-- No toast / sonner notification when a chapter ends.
-- No confetti, no emoji, no "X min read" popup.
-- No book-completion modal card with celebration.
+### 1. Visual Language (design system ke andar)
 
-## What to add (all in-page, no overlays)
+- **Coin icon**: Circular badge, `bg-accent` (terracotta), `text-accent-foreground`, serif 'W' embossed centre mein. Subtle inner shadow for depth. 3 sizes: `sm` (16px nav), `md` (32px card), `lg` (64px hero balance).
+- **Balance display**: Instrument Serif, large numeric, accent color. `1,247 Wisties` format.
+- **Colors**: Credit (+) → `text-accent` (terracotta), Debit (−) → `text-muted-foreground`. No green/red — monochrome+accent only.
+- **Motion**: Framer Motion — coin spin on balance update, staggered fade-up on transaction rows.
 
-1. **End-of-chapter page itself**
-   At the last page of each chapter, render a dedicated closing spread instead of a popup:
-   - A small centered ornament (a thin horizontal rule, or a single ❦ / ✦ glyph in muted ink)
-   - Below it, in small caps muted type: `End of Chapter 4`
-   - Nothing else. No buttons, no stats. The next flip naturally lands on the next chapter title page (which already exists).
+---
 
-2. **Chapter opener already feels like a book** — keep current chapter title page; just refine it:
-   - "Chapter 4" in tracked small-caps, hairline rule, then the chapter name in large serif. Generous top margin.
+### 2. Database Schema
 
-3. **Subtle progress, not announcements**
-   - Keep the thin progress bar under the toolbar (already there).
-   - When a chapter completes, briefly *dim* the progress bar from accent → muted for 600ms then back. No text, no sound.
+Two new tables (migration step):
 
-4. **Optional, off by default**: a soft paper-rustle SFX on the chapter-end flip only (not every page). Toggle in settings, default off.
+**`wisties_balance`** — current balance per user
+- `user_id` (uuid, unique), `balance` (numeric, default 0), timestamps
+- RLS: user reads own; service_role writes
+- GRANTs: authenticated SELECT, service_role ALL
 
-## Files to change
+**`wisties_transactions`** — append-only ledger
+- `user_id`, `amount` (signed numeric), `type` (`'refund' | 'purchase_use' | 'bonus' | 'adjustment'`), `description` (text), `reference_id` (uuid, nullable — links to `book_purchases.id`), `balance_after` (numeric), `created_at`
+- RLS: user reads own; service_role inserts
+- GRANTs: authenticated SELECT, service_role ALL
 
-- `src/components/reader/PageFlipBook.tsx`
-  - In `splitIntoPages`, append a synthetic "chapter end" page after each chapter's last content page (`kind: "chapter-end"`).
-  - In the page renderer, branch on `kind`: render the ornament + "End of Chapter N" block.
-- `src/pages/BookReader.tsx`
-  - Remove any planned toast/confetti hook. Add a tiny `useEffect` that, when `getCurrentChapter()` increments, triggers a 600ms CSS class on the progress bar (`data-chapter-pulse`).
-- `src/components/reader/ReaderToolbar.tsx`
-  - Add `data-chapter-pulse` styling on the progress bar (opacity dip via Tailwind `transition-opacity`).
-- No new deps. No `canvas-confetti`. No sonner calls from the reader.
+**DB function** `apply_wisties_change(p_user_id, p_amount, p_type, p_description, p_reference_id)` — security definer, atomic: updates balance + inserts ledger row + returns new balance.
 
-## Acceptance
+**Trigger** on profile creation → seed `wisties_balance` row with 0.
 
-- Finishing a chapter shows only a quiet end-page; the next flip enters the next chapter.
-- No popup, no emoji, no sound (unless user opts in later).
-- Progress bar gives a one-time, sub-second visual acknowledgement and returns to normal.
+---
 
-Approve and I'll implement.
+### 3. Profile Page — Balance Card
+
+New card above "Edit Profile":
+
+```text
+┌─────────────────────────────────────────┐
+│  ◉W   Wisties Balance                   │
+│       ₹1,247                            │
+│       Available for any future purchase │
+│                                         │
+│       [ View History → ]                │
+└─────────────────────────────────────────┘
+```
+
+- Coin icon (md size) left, balance + label right
+- "View History" → links to `/profile/wisties`
+- Skeleton loader while fetching
+
+---
+
+### 4. Dedicated Page — `/profile/wisties`
+
+Route: `/profile/wisties` (lazy-loaded, added to `AnimatedRoutes.tsx`)
+
+**Header block**:
+- Large coin icon (lg) + serif heading "Your Wisties"
+- Huge balance number (Instrument Serif, 5xl)
+- Subtext: "1 Wistie = ₹1. Use on any book purchase."
+
+**Stats row** (3 mini cards):
+- Total earned (lifetime credits)
+- Total spent (lifetime debits)
+- Active since (first transaction date)
+
+**Transaction table** (shadcn `Table`):
+
+| Date | Description | Reference | Amount | Balance |
+|------|------------|-----------|--------|---------|
+| 1 Jun 2026 | Refund — *Midnight Library* | TXN…f4a2 | +₹99 | ₹1,247 |
+| 28 May 2026 | Used on *Atomic Habits* | — | −₹49 | ₹1,148 |
+
+- Pagination (20 rows/page)
+- Empty state: coin icon + "No transactions yet. Refunds and bonuses will appear here."
+- Sticky header row, monospace `tabular-nums` for amounts
+
+---
+
+### 5. Refund Flow Changes
+
+When user requests refund on a `book_purchases` row (within 36h):
+1. Mark purchase `payment_status = 'refunded_to_wisties'`
+2. Call `apply_wisties_change(user, +amount, 'refund', 'Refund — {book title}', purchase_id)`
+3. Toast: "₹99 added to your Wisties"
+4. In-app notification
+
+(Refund UI itself is out of scope for this prompt — only the credit-adding plumbing.)
+
+---
+
+### 6. Refund Policy Page Update
+
+Update `/refund-policy` stub copy (or create if missing):
+- Headline: "Refunds are issued as Wisties (store credit)"
+- 36-hour window, eligible only if <20% read
+- Wisties never expire, no cash conversion
+- Link to `/profile/wisties`
+
+---
+
+### 7. Files to Touch
+
+**New**
+- `supabase/migrations/<ts>_wisties.sql` — tables, RLS, GRANTs, function, trigger
+- `src/components/WisticoinIcon.tsx` — reusable coin SVG with size variants
+- `src/components/WistiesBalanceCard.tsx` — profile card
+- `src/pages/Wisties.tsx` — full page with table
+- `src/hooks/useWisties.ts` — balance + transactions fetcher, realtime sub
+
+**Modified**
+- `src/pages/Profile.tsx` — mount `<WistiesBalanceCard />`
+- `src/components/AnimatedRoutes.tsx` — add `/profile/wisties` route
+- `src/pages/RefundPolicy.tsx` (or create) — Wisties messaging
+
+---
+
+### 8. Out of Scope (separate prompts later)
+
+- Actual refund request UI on Library / purchase rows
+- Razorpay-side refund mechanics (we only mutate ledger)
+- Admin tool to manually adjust balances
+- Bonus campaigns / promo Wisties
+
+---
+
+### Acceptance
+
+- New user signs up → balance row auto-created at 0
+- Profile shows coin card with current balance
+- `/profile/wisties` lists every transaction in table form, running balance correct
+- Mock insert via service role updates UI in realtime
+- All colors via design tokens, zero hardcoded hex
