@@ -14,9 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, User, LogOut, ShoppingCart, BookOpen, Compass, PenLine, Shield, Library } from "lucide-react";
+import { Menu, X, User, LogOut, BookOpen, Compass, PenLine, Shield, Library } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
-import NotificationBell from "@/components/NotificationBell";
 
 const Navigation = () => {
   const { user, signOut, loading } = useAuth();
