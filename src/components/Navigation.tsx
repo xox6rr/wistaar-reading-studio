@@ -14,9 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, User, LogOut, ShoppingCart, BookOpen, Compass, PenLine, Shield, Library } from "lucide-react";
+import { Menu, X, User, LogOut, BookOpen, Compass, PenLine, Shield, Library } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
-import NotificationBell from "@/components/NotificationBell";
 
 const Navigation = () => {
   const { user, signOut, loading } = useAuth();
@@ -64,24 +63,24 @@ const Navigation = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled || isOpen ? 'bg-background border-b border-border shadow-sm' : ''
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 bg-background/95 backdrop-blur-sm border-b border-border ${
+        isScrolled ? 'shadow-[0_1px_0_0_hsl(var(--border))]' : ''
       }`}
     >
       <nav className="container-main">
-        <div className="flex items-center justify-between h-14 sm:h-16">
-          <Link to="/" className="text-xl font-serif font-medium text-foreground">
+        <div className="flex items-center justify-between h-16 sm:h-20">
+          <Link to="/" className="text-2xl font-serif text-foreground tracking-tight">
             Wistaar
           </Link>
 
           {/* Desktop */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-10">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`text-sm transition-colors ${
-                  isActive(link.to) ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
+                className={`text-sm tracking-wide transition-colors ${
+                  isActive(link.to) ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {link.label}
@@ -89,16 +88,15 @@ const Navigation = () => {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-5">
             {user && cartCount > 0 && (
-              <Link to="/cart" className="relative p-2">
-                <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
-                <span className="absolute top-0.5 right-0.5 bg-primary text-primary-foreground text-[10px] font-medium rounded-full h-4 w-4 flex items-center justify-center">
-                  {cartCount}
-                </span>
+              <Link
+                to="/cart"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors tracking-wide"
+              >
+                Cart ({cartCount})
               </Link>
             )}
-            {user && <NotificationBell />}
             <ThemeToggle />
             {loading ? (
               <div className="h-8 w-8 bg-muted animate-pulse rounded-full" />
@@ -141,16 +139,15 @@ const Navigation = () => {
           </div>
 
           {/* Mobile right section */}
-          <div className="flex md:hidden items-center gap-1">
+          <div className="flex md:hidden items-center gap-3">
             {user && cartCount > 0 && (
-              <Link to="/cart" className="relative p-2">
-                <ShoppingCart className="h-5 w-5 text-muted-foreground" />
-                <span className="absolute top-0.5 right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                  {cartCount}
-                </span>
+              <Link
+                to="/cart"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cart ({cartCount})
               </Link>
             )}
-            {user && <NotificationBell />}
             <ThemeToggle />
             <button
               className="p-2 rounded-md hover:bg-muted/50 transition-colors"

@@ -23,7 +23,7 @@ const CTASection = () => {
           </Link>
           <Link to="/publish">
             <Button variant="outline" size="lg" className="px-8">
-              Publish Your Book
+              For Authors →
             </Button>
           </Link>
         </div>
