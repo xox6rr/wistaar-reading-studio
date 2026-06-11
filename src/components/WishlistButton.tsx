@@ -44,20 +44,12 @@ export default function WishlistButton({ bookId, variant = "icon", className = "
         onClick={handleToggle}
         disabled={toggleWishlist.isPending}
       >
-        <Heart className={`h-4 w-4 ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
+        <Heart className={`h-4 w-4 ${isWishlisted ? "fill-accent text-accent" : ""}`} />
         {isWishlisted ? "Wishlisted" : "Save for Later"}
       </Button>
     );
   }
 
-  return (
-    <button
-      onClick={handleToggle}
-      disabled={toggleWishlist.isPending}
-      className={`p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors ${className}`}
-      aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-    >
-      <Heart className={`w-4 h-4 ${isWishlisted ? "fill-red-500 text-red-500" : "text-foreground"} transition-colors`} />
-    </button>
-  );
+  // Card-floating heart removed per editorial refinement; render nothing in icon variant.
+  return null;
 }
